@@ -1,0 +1,12 @@
+﻿uv: C:\Users\sarth\.local\bin\uv.exe
+python: C:\Innvovik\backend\.venv/Scripts\python.exe
+env: True
+.git
+backend
+healthcare_assistant
+healthcare_assistant.db
+_di.txt
+_piplist.txt
+_pkgs.txt
+_sp.txt
+_tools.txt

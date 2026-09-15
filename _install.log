@@ -1,0 +1,105 @@
+﻿[stage-a start] 2026-09-15T16:28:40.1287977+05:30
+uv.exe : Resolved 151 packages in 22.37s
+At C:\Innvovik\_install.ps1:7 char:1
++ & $uv add --no-progress langgraph langchain langchain-text-splitters  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Resolved 151 packages in 22.37s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Building backend @ file:///C:/Innvovik/backend
+      Built backend @ file:///C:/Innvovik/backend
+Prepared 2 packages in 40.67s
+Uninstalled 1 package in 40ms
+Installed 66 packages in 4.49s
+ + aiohappyeyeballs==2.7.1
+ + aiohttp==3.14.3
+ + aiosignal==1.4.0
+ ~ backend==0.1.0 (from file:///C:/Innvovik/backend)
+ + build==1.6.1
+ + charset-normalizer==3.5.1
+ + chromadb==1.5.9
+ + distro==1.9.0
+ + durationpy==0.11
+ + filelock==3.32.6
+ + flatbuffers==25.12.19
+ + frozenlist==1.8.0
+ + fsspec==2026.7.0
+ + googleapis-common-protos==1.75.3
+ + grpcio==1.84.0
+ + hf-xet==1.6.0
+ + huggingface-hub==1.31.0
+ + importlib-resources==7.1.0
+ + jsonpatch==1.33
+ + jsonpointer==3.1.1
+ + kubernetes==36.0.3
+ + langchain==1.4.0
+ + langchain-core==1.6.3
+ + langchain-protocol==0.0.19
+ + langchain-text-splitters==1.1.2
+ + langgraph==1.2.11
+ + langgraph-checkpoint==4.2.0
+ + langgraph-prebuilt==1.1.0
+ + langgraph-sdk==0.4.4
+ + langsmith==0.12.5
+ + mmh3==5.3.0
+ + multidict==6.8.0
+ + numpy==2.5.3
+ + oauthlib==3.3.1
+ + onnxruntime==1.30.0
+ + opentelemetry-exporter-otlp-proto-common==1.44.0
+ + opentelemetry-exporter-otlp-proto-grpc==1.44.0
+ + opentelemetry-proto==1.44.0
+ + opentelemetry-sdk==1.44.0
+ + opentelemetry-semantic-conventions==0.65b0
+ + orjson==3.12.0
+ + ormsgpack==1.12.2
+ + overrides==7.7.0
+ + propcache==0.5.2
+ + protobuf==7.36.1
+ + pybase64==1.5.0
+ + pypdf==6.18.1
+ + pypika==0.51.1
+ + pyproject-hooks==1.2.0
+ + python-dateutil==2.9.0.post0
+ + requests==2.34.2
+ + requests-oauthlib==2.0.0
+ + requests-toolbelt==1.0.0
+ + shellingham==1.5.4
+ + six==1.17.0
+ + sniffio==1.3.1
+ + tenacity==9.1.4
+ + tokenizers==0.23.2
+ + tqdm==4.70.1
+ + typer==0.27.2
+ + urllib3==2.7.0
+ + uuid-utils==0.17.1
+ + websocket-client==1.9.2
+ + xxhash==4.0.1
+ + yarl==1.24.5
+ + zstandard==0.25.0
+[stage-a exit=0] 2026-09-15T16:29:48.3895820+05:30
+[stage-b start] 2026-09-15T16:29:48.3910986+05:30
+uv.exe : Resolved 187 packages in 4.41s
+At C:\Innvovik\_install.ps1:11 char:1
++ & $uv add --no-progress sentence-transformers *>&1 |
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Resolved 187 packages in 4.41s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Building backend @ file:///C:/Innvovik/backend
+      Built backend @ file:///C:/Innvovik/backend
+Downloading scipy (34.9MiB)
+Downloading torch (118.4MiB)
+Downloading scipy (34.9MiB)
+Downloading torch (118.4MiB)
+  ├ù Failed to download `torch==2.14.0`
+  Γö£ΓöÇΓû╢ Failed to extract archive: torch-2.14.0-cp313-cp313-win_amd64.whl
+  Γö£ΓöÇΓû╢ I/O operation failed during extraction
+  Γò░ΓöÇΓû╢ Failed to download distribution due to network timeout. Try increasing
+      UV_HTTP_TIMEOUT (current value: 30s).
+
+hint: `torch` (v2.14.0) was included because `backend` (v0.1.0) depends on `sentence-transformers` (v6.0.1) which 
+depends on `torch`
+hint: If you want to add the package regardless of the failed resolution, provide the `--frozen` flag to skip locking 
+and syncing
+[stage-b exit=1] 2026-09-15T16:58:18.2716869+05:30
