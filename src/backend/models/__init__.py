@@ -19,16 +19,29 @@ from backend.models.health_assessment import (
     MedicalCondition,
 )
 from backend.models.patient import Patient
+from backend.models.patient_document import (
+    DocumentStatus,
+    DocumentType,
+    PatientDocument,
+)
+from backend.models.vital_reading import VitalReading
+from backend.models.alert import Alert, AlertStatus
 
 __all__ = [
     "Allergy",
     "AssessmentStatus",
     "CurrentSymptoms",
+    "DocumentStatus",
+    "DocumentType",
     "Gender",
     "HealthAssessment",
     "MedicalCondition",
     "MedicalConditionType",
     "Medication",
     "Patient",
+    "PatientDocument",
+    "VitalReading",
+    "Alert",
+    "AlertStatus",
     "SymptomSeverity",
 ]

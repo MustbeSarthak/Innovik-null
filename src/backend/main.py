@@ -12,12 +12,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from backend.api.routes import auth_router, health_assessment_router
+from backend.api.routes import auth_router, documents_router, health_assessment_router, risk_router
 from backend.core.config import settings
 from backend.core.database import init_db
 from backend.core.exceptions import (
     AssessmentAlreadyExistsError,
     AssessmentNotFoundError,
+    DocumentNotFoundError,
+    DocumentTooLargeError,
     HealthcareAssistantError,
     PatientAlreadyExistsError,
     PatientNotFoundError,
@@ -120,6 +122,23 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
         )
 
+    @app.exception_handler(DocumentNotFoundError)
+    async def _handle_document_missing(
+        request: Request, exc: DocumentNotFoundError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(DocumentTooLargeError)
+    async def _handle_document_too_large(
+        request: Request, exc: DocumentTooLargeError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            content={"detail": str(exc)},
+        )
+
     @app.exception_handler(HealthcareAssistantError)
     async def _handle_domain_error(
         request: Request, exc: HealthcareAssistantError
@@ -149,7 +168,9 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     app.include_router(auth_router, prefix=settings.api_prefix)
+    app.include_router(documents_router, prefix=settings.api_prefix)
     app.include_router(health_assessment_router, prefix=settings.api_prefix)
+    app.include_router(risk_router, prefix=settings.api_prefix)
 
     @app.get("/health", tags=["Health"], summary="Service health check")
     def health_check() -> dict[str, str]:

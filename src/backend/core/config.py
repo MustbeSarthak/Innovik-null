@@ -41,6 +41,43 @@ class Settings(BaseSettings):
     # --- CORS ------------------------------------------------------------
     cors_allow_origins: list[str] = ["*"]
 
+    # --- Memory Agent / RAG (Module 4) -----------------------------------
+    # The two Chroma collections (``patient_records`` / ``medical_knowledge``)
+    # live inside ``chroma_persist_directory``; ``chroma_mode=ephemeral`` keeps
+    # everything in memory, which the test-suite uses.
+    chroma_persist_directory: str = "./chroma_store"
+    chroma_mode: str = "persistent"
+    collection_patient_records: str = "patient_records"
+    collection_medical_knowledge: str = "medical_knowledge"
+
+    # ``sentence-transformers`` is the production embedding provider; the
+    # deterministic ``hashing`` provider is an offline fallback (no model
+    # download) used by tests and air-gapped environments.
+    embedding_provider: str = "sentence-transformers"
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_dimensions: int = Field(default=384, gt=0)
+
+    # RAG chunking / retrieval tuning.
+    rag_chunk_size: int = Field(default=800, gt=0)
+    rag_chunk_overlap: int = Field(default=120, ge=0)
+    rag_top_k: int = Field(default=5, gt=0)
+    rag_relevance_distance: float = Field(default=0.9, ge=0, le=2)
+    rag_max_query_length: int = Field(default=1000, gt=0)
+    rag_max_excerpt_length: int = Field(default=600, gt=0)
+
+    # Patient document storage (metadata stays in the relational database).
+    document_storage_directory: str = "./storage/patient_documents"
+    max_document_size_mb: int = Field(default=20, gt=0)
+    max_documents_per_page: int = Field(default=100, gt=0)
+    medical_knowledge_directory: str = "./medical_knowledge"
+
+    # --- Continuous vital monitoring / escalation (Module 6) -------------
+    vital_simulator_interval_seconds: float = Field(default=5.0, gt=0)
+    alert_ack_timeout_seconds: float = Field(default=300.0, gt=0)
+    caretaker_phone_number: str | None = None
+    sms_provider: str = "mock"
+    hospital_provider: str = "mock"
+
     @property
     def is_sqlite(self) -> bool:
         """Return ``True`` when the configured database is SQLite."""

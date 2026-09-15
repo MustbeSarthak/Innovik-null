@@ -32,3 +32,34 @@ class AssessmentAlreadyExistsError(HealthcareAssistantError):
     def __init__(self, patient_id: int) -> None:
         super().__init__(f"patient {patient_id} already has a health assessment")
         self.patient_id = patient_id
+
+
+# --------------------------------------------------------------------------
+# Module 4 - Context-Aware Memory Agent
+# --------------------------------------------------------------------------
+class DocumentNotFoundError(HealthcareAssistantError):
+    """The requested patient document does not exist for that patient."""
+
+
+class DocumentIngestionError(HealthcareAssistantError):
+    """A document could not be loaded, split or indexed."""
+
+
+class UnsupportedDocumentTypeError(DocumentIngestionError):
+    """The uploaded file type is not supported by the RAG pipeline."""
+
+
+class DocumentTooLargeError(DocumentIngestionError):
+    """The uploaded file exceeds the configured size limit."""
+
+
+class VectorStoreError(HealthcareAssistantError):
+    """The Chroma vector store is unavailable or returned an invalid result."""
+
+
+class EmbeddingUnavailableError(HealthcareAssistantError):
+    """No embedding provider could be initialised."""
+
+
+class MemoryAgentError(HealthcareAssistantError):
+    """The LangGraph Memory Agent could not assemble a context package."""
