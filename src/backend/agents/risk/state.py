@@ -26,6 +26,7 @@ class RiskInput(BaseModel):
     assessment: HealthAssessmentRead | None = None
     medical_context: MedicalContext
     vitals: list[VitalReading] = Field(default_factory=list)
+    recent_vitals: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RiskGraphState(TypedDict, total=False):
@@ -36,6 +37,7 @@ class RiskGraphState(TypedDict, total=False):
     assessment: HealthAssessmentRead | None
     medical_context: MedicalContext
     vitals: list[VitalReading]
+    recent_vitals: list[dict[str, Any]]
     risk_input: RiskInput
     specialist_results: list[Any]
     final_assessment: Any

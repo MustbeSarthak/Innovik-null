@@ -7,8 +7,14 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from backend.services.vital_service import store_reading
-from backend.vitals.reference_ranges import SexProfile, SimulationState, screening_ranges
+from backend.services.vital_service import process_reading_risk, store_reading
+from backend.vitals.reference_ranges import (
+    SexProfile,
+    SimulationScenario,
+    SimulationState,
+    get_reference_ranges,
+    screening_ranges,
+)
 from backend.vitals.schemas import VitalReadingCreate, VitalSource
 
 
@@ -18,6 +24,7 @@ class SimulatorSession:
     profile: SexProfile
     state: SimulationState
     interval_seconds: float
+    scenario: SimulationScenario = SimulationScenario.normal
     task: asyncio.Task | None = None
     paused: bool = False
     step: int = 0
@@ -32,9 +39,9 @@ class VitalSimulator:
     def status(self, patient_id: int) -> SimulatorSession | None:
         return self._sessions.get(patient_id)
 
-    async def start(self, patient_id: int, profile: SexProfile, state: SimulationState, interval_seconds: float, session_factory) -> SimulatorSession:
+    async def start(self, patient_id: int, profile: SexProfile, state: SimulationState, interval_seconds: float, session_factory, scenario: SimulationScenario = SimulationScenario.normal) -> SimulatorSession:
         await self.stop(patient_id)
-        session = SimulatorSession(patient_id, profile, state, interval_seconds)
+        session = SimulatorSession(patient_id, profile, state, interval_seconds, scenario)
         self._sessions[patient_id] = session
         session.task = asyncio.create_task(self._run(session, session_factory))
         return session
@@ -65,31 +72,67 @@ class VitalSimulator:
 
     async def _run(self, session: SimulatorSession, session_factory) -> None:
         while True:
+            # Give callers a chance to pause or stop a newly-created session
+            # before its first sample is persisted.
+            await asyncio.sleep(session.interval_seconds)
             if not session.paused:
                 db: Session = session_factory()
                 try:
-                    payload = generate_demo_reading(session.profile, session.state, session.step)
+                    payload = generate_demo_reading(
+                        session.profile, session.state, session.step, session.scenario
+                    )
                     reading = store_reading(db, session.patient_id, payload)
-                    from backend.services.alert_service import process_reading
-                    process_reading(db, reading)
+                    process_reading_risk(db, reading)
                     session.step += 1
                 finally:
                     db.close()
             await asyncio.sleep(session.interval_seconds)
 
 
-def generate_demo_reading(profile: SexProfile, state: SimulationState, step: int = 0) -> VitalReadingCreate:
-    """Generate a smooth deterministic sample around a configured state band."""
-    bands = screening_ranges(profile, state)
-    phase = step % 6
-    values: dict[str, float] = {}
-    for index, (name, (low, high)) in enumerate(bands.items()):
-        progress = (phase + 1) / 6
-        wave = (math.sin((step + index) / 2) + 1) / 2
-        values[name] = round(low + (high - low) * (progress * 0.65 + wave * 0.35), 2)
+def generate_demo_reading(
+    profile: SexProfile,
+    state: SimulationState,
+    step: int = 0,
+    scenario: SimulationScenario = SimulationScenario.normal,
+) -> VitalReadingCreate:
+    """Generate a smooth, deterministic scenario reading for demo purposes."""
+    scenario = SimulationScenario(scenario)
+    normal = get_reference_ranges(profile)
+    if scenario is SimulationScenario.normal:
+        bands = screening_ranges(profile, state)
+        values = {}
+        for index, (name, (low, high)) in enumerate(bands.items()):
+            wave = (math.sin((step + index) / 2) + 1) / 2
+            values[name] = round(low + (high - low) * wave, 2)
+    else:
+        deterioration = screening_ranges(profile, SimulationState.critical)
+        phase = min(step, 10) / 10
+        if scenario is SimulationScenario.recovery:
+            phase = 1.0 - phase
+        if scenario is SimulationScenario.acute_event:
+            phase = 0.0 if step == 0 else 1.0
+        acute_targets = {
+            "heart_rate": 135.0,
+            "systolic_bp": 85.0,
+            "diastolic_bp": 55.0,
+            "spo2": 87.0,
+            "temperature": 39.0,
+            "glucose": 250.0,
+        }
+        values = {}
+        for index, name in enumerate(normal):
+            baseline = normal[name].midpoint()
+            if scenario is SimulationScenario.acute_event:
+                target = acute_targets[name]
+            else:
+                target_low, target_high = deterioration[name]
+                target = (target_low + target_high) / 2
+            wave = math.sin((step + index) / 2) * (normal[name].high - normal[name].low) * 0.04
+            values[name] = round(baseline + (target - baseline) * phase + wave, 2)
     return VitalReadingCreate(
         timestamp=datetime.now(timezone.utc), source=VitalSource.simulator,
-        simulator_state=state, simulator_profile=profile, **values
+        simulator_state=state, simulator_profile=profile,
+        simulator_scenario=scenario, **values
     )
 
 

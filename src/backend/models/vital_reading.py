@@ -1,11 +1,15 @@
 """Persistent composite vital readings — Module 6."""
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, DateTime, Float, ForeignKey, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.core.database import Base
+
+if TYPE_CHECKING:
+    from backend.models.patient import Patient
 
 
 class VitalReading(Base):
@@ -30,8 +34,9 @@ class VitalReading(Base):
     source: Mapped[str] = mapped_column(String(40), nullable=False)
     simulator_state: Mapped[str | None] = mapped_column(String(20), nullable=True)
     simulator_profile: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    simulator_scenario: Mapped[str | None] = mapped_column(String(40), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    patient = relationship()
+    patient: Mapped["Patient"] = relationship()

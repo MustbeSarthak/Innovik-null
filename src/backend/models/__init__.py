@@ -26,6 +26,7 @@ from backend.models.patient_document import (
 )
 from backend.models.vital_reading import VitalReading
 from backend.models.alert import Alert, AlertStatus
+from backend.models.risk_assessment import PatientRiskAssessment
 
 __all__ = [
     "Allergy",
@@ -43,5 +44,6 @@ __all__ = [
     "VitalReading",
     "Alert",
     "AlertStatus",
+    "PatientRiskAssessment",
     "SymptomSeverity",
 ]

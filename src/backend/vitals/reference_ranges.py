@@ -19,6 +19,15 @@ class SimulationState(str, Enum):
     critical = "critical"
 
 
+class SimulationScenario(str, Enum):
+    """Deterministic demo trajectories for continuous monitoring."""
+
+    normal = "NORMAL"
+    gradual_deterioration = "GRADUAL_DETERIORATION"
+    acute_event = "ACUTE_EVENT"
+    recovery = "RECOVERY"
+
+
 @dataclass(frozen=True)
 class VitalRange:
     low: float

@@ -13,6 +13,11 @@ from backend.models.vital_reading import VitalReading
 from backend.agents.risk.models import RiskAssessment, RiskLevel, RiskFinding
 
 
+def _aware(value: datetime) -> datetime:
+    """Treat SQLite's naive UTC timestamps as UTC for deadline comparisons."""
+    return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+
+
 class AlertService:
     """Apply risk actions without blocking request handlers."""
 
@@ -25,10 +30,15 @@ class AlertService:
             return None
         high = risk.score >= 70
         status = AlertStatus.CREATED if high else AlertStatus.SPECIAL_ATTENTION
+        active_statuses = [
+            AlertStatus.CREATED,
+            AlertStatus.SMS_SENT,
+            AlertStatus.WAITING_FOR_ACK,
+        ] if high else [AlertStatus.SPECIAL_ATTENTION]
         existing = db.scalar(
             select(Alert).where(
                 Alert.patient_id == reading.patient_id,
-                Alert.status.in_([AlertStatus.SPECIAL_ATTENTION, AlertStatus.CREATED, AlertStatus.SMS_SENT, AlertStatus.WAITING_FOR_ACK]),
+                Alert.status.in_(active_statuses),
                 Alert.created_at >= datetime.now(timezone.utc) - timedelta(seconds=get_settings().alert_ack_timeout_seconds),
             ).order_by(desc(Alert.created_at))
         )
@@ -70,7 +80,7 @@ class AlertService:
         if alert.status is not AlertStatus.WAITING_FOR_ACK:
             return alert
         now = datetime.now(timezone.utc)
-        if alert.sms_sent_at and now - alert.sms_sent_at > timedelta(seconds=get_settings().alert_ack_timeout_seconds):
+        if alert.sms_sent_at and now - _aware(alert.sms_sent_at) > timedelta(seconds=get_settings().alert_ack_timeout_seconds):
             self.escalate(db, alert)
             return alert
         alert.status = AlertStatus.ACKNOWLEDGED
@@ -96,7 +106,7 @@ class AlertService:
         now = datetime.now(timezone.utc)
         changed = []
         for alert in alerts:
-            if alert.sms_sent_at and now - alert.sms_sent_at >= timedelta(seconds=get_settings().alert_ack_timeout_seconds):
+            if alert.sms_sent_at and now - _aware(alert.sms_sent_at) >= timedelta(seconds=get_settings().alert_ack_timeout_seconds):
                 changed.append(self.escalate(db, alert))
         return changed
 

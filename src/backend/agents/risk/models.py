@@ -23,6 +23,9 @@ class RiskEvidence(BaseModel):
     filename: str | None = None
     document_type: str | None = None
     field: str | None = None
+    timestamp: str | None = None
+    observed_value: float | None = None
+    reference_range: str | None = None
 
 
 class RiskFinding(BaseModel):
@@ -37,6 +40,11 @@ class RiskFinding(BaseModel):
     evidence: list[RiskEvidence] = Field(default_factory=list)
     confidence: float = Field(ge=0, le=1)
     reason: str
+    affected_vital: str | None = None
+    observed_value: float | None = None
+    reference_range: str | None = None
+    timestamp: str | None = None
+    source: str | None = None
 
 
 class RiskResult(BaseModel):
@@ -65,6 +73,9 @@ class RiskAssessment(BaseModel):
     evidence: list[RiskEvidence] = Field(default_factory=list)
     uncertainties: list[str] = Field(default_factory=list)
     recommended_action: str
+    detected_indicators: list[str] = Field(default_factory=list)
+    escalation_required: bool = False
+    ai_provider: str = "deterministic"
     disclaimer: str = (
         "This is an AI-generated risk assessment and is not a medical diagnosis. "
         "It does not replace advice from a qualified healthcare professional."

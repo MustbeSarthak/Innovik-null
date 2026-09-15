@@ -5,6 +5,7 @@ their routers, agents and MCP servers in here without touching existing code.
 """
 
 from contextlib import asynccontextmanager
+import asyncio
 from typing import Any, AsyncIterator
 
 from fastapi import FastAPI, Request, status
@@ -12,7 +13,15 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from backend.api.routes import auth_router, documents_router, health_assessment_router, risk_router
+from backend.api.routes import (
+    alerts_router,
+    auth_router,
+    documents_router,
+    health_assessment_router,
+    risk_router,
+    vitals_router,
+)
+from backend.alerts.scheduler import alert_timeout_worker
 from backend.core.config import settings
 from backend.core.database import init_db
 from backend.core.exceptions import (
@@ -42,7 +51,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Create the database schema on start-up when enabled."""
     if settings.auto_create_tables:
         init_db()
-    yield
+    stop_event = asyncio.Event()
+    timeout_task = asyncio.create_task(alert_timeout_worker(stop_event))
+    try:
+        yield
+    finally:
+        stop_event.set()
+        timeout_task.cancel()
+        try:
+            await timeout_task
+        except asyncio.CancelledError:
+            pass
 
 
 def _validation_error_details(exc: RequestValidationError) -> list[dict[str, Any]]:
@@ -168,9 +187,11 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     app.include_router(auth_router, prefix=settings.api_prefix)
+    app.include_router(alerts_router, prefix=settings.api_prefix)
     app.include_router(documents_router, prefix=settings.api_prefix)
     app.include_router(health_assessment_router, prefix=settings.api_prefix)
     app.include_router(risk_router, prefix=settings.api_prefix)
+    app.include_router(vitals_router, prefix=settings.api_prefix)
 
     @app.get("/health", tags=["Health"], summary="Service health check")
     def health_check() -> dict[str, str]:

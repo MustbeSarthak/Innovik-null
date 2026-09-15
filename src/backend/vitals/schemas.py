@@ -5,7 +5,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from backend.vitals.reference_ranges import SexProfile, SimulationState
+from backend.vitals.reference_ranges import SexProfile, SimulationScenario, SimulationState
 
 
 class VitalSource(str, Enum):
@@ -27,6 +27,7 @@ class VitalReadingCreate(BaseModel):
     source: VitalSource = VitalSource.manual
     simulator_state: SimulationState | None = None
     simulator_profile: SexProfile | None = None
+    simulator_scenario: SimulationScenario | None = None
 
 
 class VitalReadingRead(VitalReadingCreate):
@@ -50,6 +51,7 @@ class SimulatorStartRequest(BaseModel):
     profile: SexProfile = SexProfile.male
     state: SimulationState = SimulationState.normal
     interval_seconds: float | None = Field(default=None, gt=0)
+    scenario: SimulationScenario = SimulationScenario.normal
 
 
 class SimulatorStatusRead(BaseModel):
@@ -59,6 +61,7 @@ class SimulatorStatusRead(BaseModel):
     profile: SexProfile | None
     state: SimulationState | None
     interval_seconds: float
+    scenario: SimulationScenario | None
 
 
 class AlertRead(BaseModel):

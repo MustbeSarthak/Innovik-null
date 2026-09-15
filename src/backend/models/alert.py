@@ -2,11 +2,15 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum as SAEnum, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.core.database import Base
+
+if TYPE_CHECKING:
+    from backend.models.patient import Patient
 
 
 class AlertStatus(str, Enum):
@@ -44,4 +48,4 @@ class Alert(Base):
     escalation_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     hospital_result: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    patient = relationship()
+    patient: Mapped["Patient"] = relationship()

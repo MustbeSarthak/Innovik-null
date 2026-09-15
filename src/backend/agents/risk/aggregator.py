@@ -49,6 +49,8 @@ def aggregate_risks(patient_id: int, results: Iterable[RiskResult]) -> RiskAsses
         evidence=evidence,
         uncertainties=_unique(uncertainties),
         recommended_action=action,
+        detected_indicators=[finding.finding for finding in findings],
+        escalation_required=score >= 70,
     )
 
 

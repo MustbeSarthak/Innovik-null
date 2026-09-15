@@ -78,6 +78,13 @@ class Settings(BaseSettings):
     sms_provider: str = "mock"
     hospital_provider: str = "mock"
 
+    # Optional Acno AI intelligence provider. Disabled when unset; the
+    # deterministic risk engine remains the safety authority.
+    acno_ai_api_key: str | None = None
+    acno_ai_base_url: str | None = None
+    acno_ai_model: str = ""
+    acno_ai_timeout_seconds: float = Field(default=5.0, gt=0)
+
     @property
     def is_sqlite(self) -> bool:
         """Return ``True`` when the configured database is SQLite."""
