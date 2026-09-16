@@ -76,7 +76,18 @@ class Settings(BaseSettings):
     alert_ack_timeout_seconds: float = Field(default=300.0, gt=0)
     caretaker_phone_number: str | None = None
     sms_provider: str = "mock"
+    twilio_account_sid: str | None = None
+    twilio_auth_token: str | None = None
+    twilio_from_phone_number: str | None = None
+    twilio_timeout_seconds: float = Field(default=10.0, gt=0)
     hospital_provider: str = "mock"
+    # Meta WhatsApp Cloud API is optional.  When either credential is unset the
+    # provider safely skips delivery, allowing the local mock-SMS workflow to
+    # remain the default.
+    whatsapp_access_token: str | None = None
+    whatsapp_phone_number_id: str | None = None
+    whatsapp_api_version: str = "v22.0"
+    whatsapp_timeout_seconds: float = Field(default=10.0, gt=0)
 
     # Optional Acno AI intelligence provider. Disabled when unset; the
     # deterministic risk engine remains the safety authority.
